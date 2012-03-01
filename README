@@ -10,7 +10,8 @@ Simply copy the .jar into your Bukkit's "plugins" directory, then run the server
 
 Configuration:
 -------------
-The file plugins/PlayerRider/config.yml is created the first time you run the server, it contains a single option "message" where you can set which message will be displayed to all players when someone ride another player.
+The file plugins/PlayerRider/config.yml is created the first time you run the server,
+it contains a single option "message" where you can set which message will be displayed to all players when someone ride another player.
 
 <player> designate the rider / <duck> the guy being ridden. To disable the message, put an empty (double) quotes pair.
 
@@ -21,11 +22,13 @@ Permissions:
 
 Usage:
 ------
-Right click on a player to ride it. You can only ride a player if:
+Right click on a player to ride him. You can only ride a player if:
 - You have the permission "playerrider.ride"
 - This player has the permission "playerrider.beridden"
 - You have no player(s) on your shoulders
 
-To 
+To get down from a player, right click again on him.
 
-If you right click on a player who bears someone or on someone sitting on another player, you will appear on the top of them. So, you can make towers :) In that case, only the upper player can get down, the others have to wait being the upper one.
+If you right click on a player who bears someone or on someone sitting on another player,
+you will appear on the top of them. So, you can make towers :)
+(In that case, only the upper player can get down, the others have to wait being the upper one.)
