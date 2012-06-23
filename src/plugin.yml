@@ -1,6 +1,6 @@
 name: PlayerRider
 description: Allow you to ride players.
-version: 1.0
+version: 1.1
 author: arboriginal
 website: http://dev.bukkit.org/server-mods/playerrider/
 dev-url: https://github.com/arboriginal/PlayerRider
@@ -13,4 +13,8 @@ permissions:
         
     playerrider.beridden:
         description: Can be ridden.
+        default: false
+        
+    playerrider.eject:
+        description: Can eject players.
         default: false

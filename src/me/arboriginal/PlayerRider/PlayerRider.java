@@ -24,6 +24,11 @@ public class PlayerRider extends JavaPlugin implements Listener {
 			saveConfig();
 		}
 
+		if (!config.contains("ejectmessage")) {
+			config.set("ejectmessage", "<duck> has ejected <player>");
+			saveConfig();
+		}
+
 		getServer().getPluginManager().registerEvents(this, this);
 	}
 
@@ -33,21 +38,24 @@ public class PlayerRider extends JavaPlugin implements Listener {
 
 	@EventHandler
 	public void onPlayerInteractEntity(PlayerInteractEntityEvent event) {
-		if (event.getRightClicked() instanceof Player && playerCanRide(event.getPlayer())) {
+		if (event.getRightClicked() instanceof Player) {
 			Player player = event.getPlayer();
-			Player vehicle = getVehicle(player);
 
-			if (vehicle == null) {
-				vehicle = (Player) event.getRightClicked();
-				Player duck = getRootVehicle(vehicle);
+			if (!duckEjectPassenger(player, event.getRightClicked()) && playerCanRide(player)) {
+				Player vehicle = getVehicle(player);
 
-				if (duck.hasPermission("playerrider.beridden")) {
-					getLastPassager(vehicle).setPassenger(player);
-					alertPlayers(player, duck);
+				if (vehicle == null) {
+					vehicle = (Player) event.getRightClicked();
+					Player duck = getRootVehicle(vehicle);
+
+					if (duck.hasPermission("playerrider.beridden")) {
+						getLastPassenger(vehicle).setPassenger(player);
+						alertPlayers(player, duck, "message");
+					}
 				}
-			}
-			else {
-				vehicle.eject();
+				else {
+					vehicle.eject();
+				}
 			}
 		}
 	}
@@ -60,6 +68,19 @@ public class PlayerRider extends JavaPlugin implements Listener {
 		return player.hasPermission("playerrider.ride") && player.getPassenger() == null;
 	}
 
+	private boolean duckEjectPassenger(Player duck, Entity passenger) {
+		if (duck.hasPermission("playerrider.eject")) {
+			if (passenger.equals(duck.getPassenger())) {
+				duck.eject();
+				alertPlayers((Player) passenger, duck, "ejectmessage");
+				
+				return true;
+			}
+		}
+
+		return false;
+	}
+
 	private Player getRootVehicle(Player vehicle) {
 		while (getVehicle(vehicle) != null) {
 			vehicle = (Player) getVehicle(vehicle);
@@ -68,7 +89,7 @@ public class PlayerRider extends JavaPlugin implements Listener {
 		return vehicle;
 	}
 
-	private Player getLastPassager(Player vehicle) {
+	private Player getLastPassenger(Player vehicle) {
 		while (vehicle.getPassenger() != null && vehicle.getPassenger() instanceof Player) {
 			vehicle = (Player) vehicle.getPassenger();
 		}
@@ -88,8 +109,8 @@ public class PlayerRider extends JavaPlugin implements Listener {
 		return null;
 	}
 
-	private void alertPlayers(Player player, Player duck) {
-		String message = config.getString("message");
+	private void alertPlayers(Player player, Player duck, String key) {
+		String message = config.getString(key);
 
 		if (!message.isEmpty()) {
 			getServer().broadcastMessage(message.replace("<player>", player.getName()).replace("<duck>", duck.getName()));
