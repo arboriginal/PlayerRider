@@ -1,0 +1,84 @@
+########################################################################################################
+# Language settings
+########################################################################################################
+#
+# You can use Minecraft colors code in all those language parameters.
+# As I've followed the essentials code notation in the plugin, you have to use the « & » symbol.
+# Here is the codes you can use: https://wiki.ess3.net/mc/
+#
+# Usable placeholders:
+# - {prefix} for the message prefix
+# - {player} for the player who rides
+# - {duck} for the player being riden
+#
+# Prefix used to all plugin messages (at least by default...)
+# If you want a different prefix for messages (or no prefix), leave it blank « "" ».
+# This value replace « {prefix} » in the next parameters. 
+prefix: "&8[&7&lPlayerRider&8] "
+# Message displayed when using the command /prider-reload
+reload: "{prefix} &aConfiguration successfully reloaded."
+# Error message when the chosen sound « boost_whip_sound » is incorrect.
+sndErr: "{prefix} &cChosen sound is invalid and has been disabled."
+
+# In the both 3 sections: (broadcast, player and duck)
+# - sub-section "ride" is used when a player riders another
+# - sub-section "eject" when he's being ejected 
+#
+# If you don't want one those messages, simply leave it blank « "" ».
+
+broadcast:
+  ride: "&f&l•&r {prefix}&6{player}&3 now rides &6{duck}&3!"
+  eject: "&f&l•&r {prefix}&6{duck}&3 has ejected &6{player}&3!"
+
+player:
+  ride: "{prefix}&bYou are riding &e&l{duck}&b, yeah!!!"
+  eject: "{prefix}&e&l{duck}&b's got a temper, try to give him a carrot maybe?"
+
+duck:
+  ride: "{prefix}&e&l{player}&b likes you so much, he now stands on your shoulder :)"
+  eject: "{prefix}&bYou've just ejected &e&l{player}&b, beware... I'm sure he will try again!"
+
+########################################################################################################
+# Settings which change the plugin mechanisms 
+########################################################################################################
+
+# Here, you will define which items the player can have in hand to perform the action.
+# You can find usable names here: https://hub.spigotmc.org/javadocs/spigot/org/bukkit/Material.html
+allowed_items:
+  ride: # Action: Ride a player
+    - AIR # Air means "empty hand"
+    - LEAD
+    - SADDLE
+  whip: # Action: Whip the player you are riding
+    - BLAZE_ROD
+    - BONE
+    - CARROT
+    - GOLDEN_CARROT
+
+# Max pitch value the riden player must be to be able to eject his rider
+# (look with F3 in the game and see what pich value is OK for you).
+eject_maxPitch: -40.0
+# Decide if a player riden should automaticaly eject his rider when taking damages (true or false)
+eject_when_hurt: true
+# Same, but for the rider: If he takes damages, he's get off the player or not (true or false).
+getoff_when_hurt: true
+# Decide if riders will be protected of suffocation damages when riding a player (true or false).
+prevent_suffocation: true
+# Decide if riders can boost players of not (true or false)
+boost_allowed: true
+
+##### [ the next parameters are ignored if boost_allowed: false ] #####
+
+# Value of the speed boost (integer) 
+boost_amplifier: 4
+# Duration in server ticks (20 ticks = 1 second) of the speed effect
+boost_duration: 60
+# Max pitch value the rider must be to be able to whip and boost the player (float)
+boost_maxPitch: 60.0
+# Sound the whip action will play, see https://hub.spigotmc.org/javadocs/spigot/org/bukkit/Effect.html
+boost_whip_sound: ENTITY_FIREWORK_ROCKET_SHOOT
+# Volume of the sound. Set it to zero if you don't want a sound effect
+boost_whip_volume: 1.0
+# Pitch of the sound (normal play = 1, value can be from 0.4 to 2 if I remember well)
+boost_whip_pitch: 1.3
+# Tips: To find the sound you want, you can use the ingame /playsound command.
