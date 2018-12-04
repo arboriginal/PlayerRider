@@ -40,7 +40,9 @@ Simply copy [PlayerRider.jar](https://github.com/arboriginal/PlayerRider/release
 
 * **playerrider.reload**: Allows to use `/prider-reload` command.
 * **playerrider.ride**: Allows to ride a player.
+* **playerrider.ride.keepitem**: Allows to ride a player without consuming the item (if activated).
 * **playerrider.whip**t: Allows to whip he player you are riding.
+* **playerrider.whip.keepitem**t: Allows to whip he player you are riding without consuming the item (if activated).
 * **playerrider.duck**: Allows to be ridden.
 * **playerrider.eject**: Allows to eject your passenger.
 
@@ -50,10 +52,7 @@ Edit `plugins/PlayerRider/config.yml` then reload the plugin, or the server if y
 
 ## Previous version
 
-I did this plugin in 2012, as an easter egg, players on the server I was got tons of fun with it *(we mainly used it on new guys who are not correct)*. So I've decided to extract this part, and shared it as an independent plugin on [Bukkit.org page](http://dev.bukkit.org/projects/playerrider). Then, I've stopped to play at Minecraft, and seen people grabbed the code and make their own "updated" versions *(with minor modifications like change the value of the API...)* without mention the origin, this had discouraged me to make new releases.
-
-## For now
-I've recently started a server with friends, so it gives me motivation to re-use Java and develop new plugins. I've ported this one because it was funny to play with and quick to upgrade. The new version contains (much) more options and a few funny features.
+I did this plugin in 2012, as an easter egg, players on the server I was got tons of fun with it *(we mainly used it on new guys who are not correct)*. So I've decided to extract this part, and shared it as an independent plugin on [Bukkit.org page](http://dev.bukkit.org/projects/playerrider).
 
 ## TODO
 Because hitboxes have changed, the player ridden can see his rider's legs. I will work soon to improve this not to reduce the FOV. But the plugin is fully working except this visual effect.

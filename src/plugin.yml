@@ -1,9 +1,9 @@
 name: PlayerRider
 description: Allow you to ride players.
-version: 1.13
+version: 1.13.1
 
 author: arboriginal
-website: http://dev.bukkit.org/server-mods/playerrider/
+website: https://www.spigotmc.org/resources/playerrider.62799/
 dev-url: https://github.com/arboriginal/PlayerRider
 
 depend: [ ]
@@ -27,9 +27,17 @@ permissions:
   playerrider.ride:
     description: Allows to ride a player.
     default: true
-    
+
+  playerrider.ride.keepitem:
+    description: Allows to ride a player without consuming the item.
+    default: false
+
   playerrider.whip:
     description: Allows to whip the player you ride.
+    default: true
+
+  playerrider.whip.keepitem:
+    description: Allows to whip the player you ride without consuming the item.
     default: true
 
   playerrider.duck:

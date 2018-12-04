@@ -2,30 +2,37 @@ package me.arboriginal.PlayerRider;
 
 import java.util.List;
 import org.bukkit.ChatColor;
+import org.bukkit.Material;
 import org.bukkit.Sound;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
+import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.EquipmentSlot;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
+import net.md_5.bungee.api.ChatMessageType;
+import net.md_5.bungee.api.chat.TextComponent;
 
 // TODO: Find a way not to hide the duck POV with rider legs (players have new hitbox)
 
 public class PlayerRider extends JavaPlugin implements Listener {
-  protected FileConfiguration config;
-  public static Sound         sound;
-  public static Float         volume;
+  public static FileConfiguration config;
+  public static Sound             sound;
+  public static Float             volume;
+  public static PRcooldown        cooldown;
 
   // -----------------------------------------------------------------------------------------------
   // JavaPlugin methods
@@ -33,6 +40,7 @@ public class PlayerRider extends JavaPlugin implements Listener {
 
   @Override
   public void onEnable() {
+    cooldown = new PRcooldown();
     reloadConfig();
 
     getServer().getPluginManager().registerEvents(this, this);
@@ -86,34 +94,34 @@ public class PlayerRider extends JavaPlugin implements Listener {
   @EventHandler
   public void onPlayerInteractEntity(PlayerInteractEntityEvent event) {
     // https://www.spigotmc.org/threads/how-would-i-stop-an-event-from-being-called-twice.135234/#post-1434104
-    if (event.getHand() == EquipmentSlot.OFF_HAND) return;
+    if (event.getHand() == EquipmentSlot.OFF_HAND || !(event.getRightClicked() instanceof Player)) return;
 
-    Entity duck = event.getRightClicked();
-
-    if (!(duck instanceof Player) || !duck.hasPermission("playerrider.duck")) return;
-
-    Player player = event.getPlayer();
+    Player player = event.getPlayer(), duck = (Player) event.getRightClicked();
 
     if (player.getPassengers().contains(duck)) {
       if (player.getLocation().getPitch() < config.getDouble("eject_maxPitch")
-          && player.hasPermission("playerrider.eject")) {
+          && player.hasPermission("playerrider.eject")
+          && !cooldown.isActive("eject.perform", player, true)) {
         player.eject();
-
         alert("eject", duck, player);
+        cooldown.clear("eject.perform", player);
       }
 
       return;
     }
 
-    if (!player.hasPermission("playerrider.ride") || player.isInsideVehicle()
-        || !config.getStringList("allowed_items.ride")
-            .contains(player.getInventory().getItemInMainHand().getType().toString()))
-      return;
+    if (!playerAllowed(player, "ride") || !duck.hasPermission("playerrider.duck") || player.isInsideVehicle()) return;
+
+    ItemStack item = player.getInventory().getItemInMainHand();
+
+    if (!config.getStringList("allowed_items.ride").contains(item.getType().toString())) return;
 
     List<Entity> riders = duck.getPassengers();
+    int          count  = 0;
 
     while (riders.size() == 1 && riders.get(0) instanceof Player) {
-      duck = riders.get(0);
+      duck = (Player) riders.get(0);
+      count++;
 
       if (duck.equals(player)) {
         return;
@@ -122,11 +130,34 @@ public class PlayerRider extends JavaPlugin implements Listener {
       riders = duck.getPassengers();
     }
 
-    if (riders.size() == 0) {
-      duck.addPassenger(player);
+    if (riders.size() > 0) return;
 
-      alert("ride", player, duck);
+    if (!duckAllowed(duck, count + 1)) {
+      userMessage(player, "tooMany", player, duck);
+      return;
     }
+
+    if (duck.addPassenger(player)) {
+      consume(player, item, "ride");
+      alert("ride", player, duck);
+      cooldown.set("ride.perform", player, duck);
+      cooldown.set("eject.perform", duck);
+    }
+    else {
+      userMessage(player, "failed", player, duck);
+    }
+  }
+
+  private boolean duckAllowed(Player duck, int passengersCount) {
+    ConfigurationSection section = config.getConfigurationSection("max_riders");
+
+    for (String group : section.getKeys(false)) {
+      if ((group.equals("default") || duck.hasPermission("playerrider.duck." + group))
+          && config.getInt("max_riders." + group) >= passengersCount)
+        return true;
+    }
+
+    return false;
   }
 
   @EventHandler
@@ -138,34 +169,46 @@ public class PlayerRider extends JavaPlugin implements Listener {
 
     Player player = event.getPlayer();
 
-    if (!player.hasPermission("playerrider.whip")
+    if (!playerAllowed(player, "whip")
         || player.getLocation().getPitch() < config.getDouble("boost_maxPitch")
-        || !(player.getVehicle() instanceof Player)
-        || !config.getStringList("allowed_items.whip")
-            .contains(player.getInventory().getItemInMainHand().getType().toString()))
+        || !(player.getVehicle() instanceof Player))
       return;
+
+    ItemStack item = player.getInventory().getItemInMainHand();
+
+    if (!config.getStringList("allowed_items.whip").contains(item.getType().toString())) return;
 
     Player duck = (Player) player.getVehicle();
 
-    duck.addPotionEffect(new PotionEffect(PotionEffectType.SPEED, config.getInt("boost_duration"),
-        config.getInt("boost_amplifier"), false, false, false), true);
+    if (cooldown.isActive("whip.perform", player, duck, true)) return;
 
-    if (sound != null) {
-      player.playSound(player.getLocation(), sound, volume, (float) config.getDouble("boost_whip_pitch"));
-      duck.playSound(duck.getLocation(), sound, volume, (float) config.getDouble("boost_whip_pitch"));
+    int amplifier = config.getInt("boost_amplifier"), duration = config.getInt("boost_duration");
+
+    if (amplifier > 0 && duration > 0) {
+      if (sound != null) {
+        player.playSound(player.getLocation(), sound, volume, (float) config.getDouble("boost_whip_pitch"));
+        duck.playSound(duck.getLocation(), sound, volume, (float) config.getDouble("boost_whip_pitch"));
+      }
+
+      duck.addPotionEffect(new PotionEffect(PotionEffectType.SPEED, duration, amplifier, false, false, false), true);
     }
 
+    consume(player, item, "whip");
+    alert("whip", player, duck);
+    cooldown.set("whip.perform", player, duck);
   }
 
   @EventHandler
   public void onEntityDamage(EntityDamageEvent event) {
+    if (event.isCancelled()) return;
+
     Entity injured = event.getEntity();
 
     if (!(injured instanceof Player)) return;
 
     if (config.getBoolean("prevent_suffocation")
         && event.getCause() == DamageCause.SUFFOCATION
-        && event.getEntity().getVehicle() instanceof Player) {
+        && injured.getVehicle() instanceof Player) {
       event.setCancelled(true);
       return;
     }
@@ -181,15 +224,65 @@ public class PlayerRider extends JavaPlugin implements Listener {
     }
   }
 
+  @EventHandler
+  public void onEntityDamageByEntityEvent(EntityDamageByEntityEvent event) {
+    Entity injured = event.getEntity();
+
+    if (!(injured instanceof Player)) return;
+
+    if (config.getBoolean("prevent_hit_rider") && event.getDamager() instanceof Player) {
+      Entity vehicle = injured.getVehicle();
+
+      if (vehicle != null && event.getDamager().equals(vehicle)) {
+        event.setCancelled(true);
+        return;
+      }
+    }
+  }
+
   // -----------------------------------------------------------------------------------------------
   // Custom methods
   // -----------------------------------------------------------------------------------------------
 
-  private void alert(String key, CommandSender player, CommandSender duck) {
-    userMessage(player, "player." + key, player, duck);
-    userMessage(duck, "duck." + key, player, duck);
+  private boolean playerAllowed(Player player, String key) {
+    return player.hasPermission("playerrider." + key) || player.hasPermission("playerrider." + key + ".keepitem");
+  }
 
-    broadcast(key, player, duck);
+  private void consume(Player player, ItemStack item, String key) {
+    if (config.getBoolean("consume_items." + key)
+        && !player.hasPermission("playerrider." + key + ".keepitem")
+        && item.getType() != Material.AIR)
+      item.setAmount(item.getAmount() - 1);
+  }
+
+  protected static void warn(String key, Player player, Player duck, int delay) {
+    String[] parts = key.split("\\.");
+
+    if (parts.length != 2 || !parts[1].equals("perform")) return;
+
+    String message = PlayerRider.config.getString("warn_player_when_cooldown." + parts[0]);
+
+    if (message.isEmpty()) return;
+
+    ((Player) player).spigot().sendMessage(ChatMessageType.ACTION_BAR,
+        new TextComponent(prepareMessage(message.replace("{delay}", "" + delay), player, duck)));
+  }
+
+  private void alert(String key, Player player, Player duck) {
+    if (!cooldown.isActive(key + ".alertPlayer", player, duck)) {
+      userMessage(player, "player." + key, player, duck);
+      cooldown.set(key + ".alertPlayer", player, duck);
+    }
+
+    if (!cooldown.isActive(key + ".alertDuck", player, duck)) {
+      userMessage(duck, "duck." + key, player, duck);
+      cooldown.set(key + ".alertDuck", player, duck);
+    }
+
+    if (!cooldown.isActive(key + ".broadcast", player, duck)) {
+      broadcast(key, player, duck);
+      cooldown.set(key + ".broadcast", player, duck);
+    }
   }
 
   private void userMessage(CommandSender sender, String key) {
@@ -212,11 +305,11 @@ public class PlayerRider extends JavaPlugin implements Listener {
     }
   }
 
-  private String prepareMessage(String message) {
+  private static String prepareMessage(String message) {
     return prepareMessage(message, null, null);
   }
 
-  private String prepareMessage(String message, CommandSender player, CommandSender duck) {
+  private static String prepareMessage(String message, CommandSender player, CommandSender duck) {
     message = message.replace("{prefix}", config.getString("prefix"));
 
     if (player != null) message = message.replace("{player}", player.getName());

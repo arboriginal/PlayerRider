@@ -13,33 +13,70 @@
 #
 # Prefix used to all plugin messages (at least by default...)
 # If you want a different prefix for messages (or no prefix), leave it blank « "" ».
-# This value replace « {prefix} » in the next parameters. 
+# This value replace « {prefix} » in the next parameters.
 prefix: "&8[&7&lPlayerRider&8] "
 # Message displayed when using the command /prider-reload
-reload: "{prefix} &aConfiguration successfully reloaded."
+reload: "{prefix}&aConfiguration successfully reloaded."
 # Error message when the chosen sound « boost_whip_sound » is incorrect.
-sndErr: "{prefix} &cChosen sound is invalid and has been disabled."
+sndErr: "{prefix}&cChosen sound is invalid and has been disabled."
+# Message sent to player trying to ride a player who already have reached his limit.
+tooMany: "{prefix}&6{duck}&c cannot wear more players... He needs to eat more spinach!"
+# Message when the player should be able to ride but it's fail (maybe another plugin cancel the event)
+failed: "{prefix}&cUnable to ride &6{duck}&c, maybe another plugin is preventing it..."
 
 # In the both 3 sections: (broadcast, player and duck)
 # - sub-section "ride" is used when a player riders another
-# - sub-section "eject" when he's being ejected 
+# - sub-section "whip" is used when a player whips another
+# - sub-section "eject" when he's being ejected
 #
-# If you don't want one those messages, simply leave it blank « "" ».
-
+# If you don't want one of those messages, simply leave it blank « "" ».
+# You can also adjust the cooldown for messages, see below.
 broadcast:
   ride: "&f&l•&r {prefix}&6{player}&3 now rides &6{duck}&3!"
+  whip: "&f&l•&r {prefix}&6{player}&3 whips &6{duck}&3!"
   eject: "&f&l•&r {prefix}&6{duck}&3 has ejected &6{player}&3!"
 
 player:
   ride: "{prefix}&bYou are riding &e&l{duck}&b, yeah!!!"
+  whip: "{prefix}&bYou whiped &e&l{duck}&b!!!"
   eject: "{prefix}&e&l{duck}&b's got a temper, try to give him a carrot maybe?"
 
 duck:
   ride: "{prefix}&e&l{player}&b likes you so much, he now stands on your shoulder :)"
+  whip: "{prefix}&e&l{player}&b whipped you, do you like that?"
   eject: "{prefix}&bYou've just ejected &e&l{player}&b, beware... I'm sure he will try again!"
 
+cooldowns:
+  ride:
+    perform: 0
+    broadcast: 30
+    alertPlayer: 0
+    alertDuck: 0
+    
+  whip:
+    perform: 2
+    broadcast: 30
+    alertPlayer: 2
+    alertDuck: 2
+    
+  eject:
+    perform: 3 # Not a real cooldown here, but time to wait before being able to eject the rider
+    broadcast: 30
+    alertPlayer: 3
+    alertDuck: 3
+
+# When an action cannot be done because of the cooldown, the player will receive this message
+# Because the chat can be spammed or not read, this will be done as an action bar message.
+# Here, you can use {delay} as the delay value in seconds before the player will be able again.
+#
+# If you don't want one of those messages, simply leave it blank « "" ».
+warn_player_when_cooldown:
+  ride: "&4&lWait &6&l{delay}&4&ls before to ride another player"
+  whip: "&4&lWait &6&l{delay}&4&ls before to whip again &e&l{duck}"
+  eject: "&4&lWait &6&l{delay}&4&ls before to eject &e&l{duck}"
+
 ########################################################################################################
-# Settings which change the plugin mechanisms 
+# Settings which change the plugin mechanisms
 ########################################################################################################
 
 # Here, you will define which items the player can have in hand to perform the action.
@@ -55,6 +92,23 @@ allowed_items:
     - CARROT
     - GOLDEN_CARROT
 
+# You decide if items used to perform the action are consumed or not
+consume_items:
+  ride: false
+  whip: true
+
+# Define how many riders can sit on the same player's shoulders
+# You can set groups you need, and give the appropriate permission to your users.
+# Each groups you define will be checked with the permission "playerrider.duck.<group>"
+max_riders:
+  # This group is the default one (if you delete it, it will be re-added into your configuration).
+  # It will be applied to all players who don't have another "playerrider.duck.<group>" permission.
+  # No need to give the permission "playerrider.duck.newbies", it's assumed if the player have "playerrider.duck".
+  default: 16
+  # Here are some examples to illustrate:
+  # newbies: 1    <--- corresponds to the permission "playerrider.duck.newbies"
+  # staff: 32     <--- corresponds to the permission "playerrider.duck.staff"
+
 # Max pitch value the riden player must be to be able to eject his rider
 # (look with F3 in the game and see what pich value is OK for you).
 eject_maxPitch: -40.0
@@ -64,20 +118,22 @@ eject_when_hurt: true
 getoff_when_hurt: true
 # Decide if riders will be protected of suffocation damages when riding a player (true or false).
 prevent_suffocation: true
-# Decide if riders can boost players of not (true or false)
+# Decide if a player riden cannot damage his rider (true or false).
+prevent_hit_rider: true
+# Decide if riders can boost players or not (true or false)
 boost_allowed: true
 
 ##### [ the next parameters are ignored if boost_allowed: false ] #####
 
-# Value of the speed boost (integer) 
+# Value of the speed boost (integer), 0 to disable the boost
 boost_amplifier: 4
-# Duration in server ticks (20 ticks = 1 second) of the speed effect
+# Duration in server ticks (20 ticks = 1 second) of the speed effect, 0 to disable the boost
 boost_duration: 60
-# Max pitch value the rider must be to be able to whip and boost the player (float)
+# Max pitch value the rider must be to whip and boost the player (float), check in game with F3.
 boost_maxPitch: 60.0
 # Sound the whip action will play, see https://hub.spigotmc.org/javadocs/spigot/org/bukkit/Effect.html
 boost_whip_sound: ENTITY_FIREWORK_ROCKET_SHOOT
-# Volume of the sound. Set it to zero if you don't want a sound effect
+# Volume of the sound. Set it to zero if you don't want a sound effect (float)
 boost_whip_volume: 1.0
 # Pitch of the sound (normal play = 1, value can be from 0.4 to 2 if I remember well)
 boost_whip_pitch: 1.3
