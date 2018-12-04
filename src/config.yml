@@ -46,24 +46,25 @@ duck:
   whip: "{prefix}&e&l{player}&b whipped you, do you like that?"
   eject: "{prefix}&bYou've just ejected &e&l{player}&b, beware... I'm sure he will try again!"
 
+# Cooldowns (in seconds)
 cooldowns:
   ride:
-    perform: 0
-    broadcast: 30
-    alertPlayer: 0
-    alertDuck: 0
+    perform: 0      # Before to be able to ride again
+    broadcast: 30   # Prevent spam chat: This will not display again the same message (same player, same duck)
+    alertPlayer: 0  # Prevent spam chat (for the player who has just ride another)
+    alertDuck: 0    # Prevent spam chat (for the player being ridden)
     
   whip:
-    perform: 2
-    broadcast: 30
-    alertPlayer: 2
-    alertDuck: 2
+    perform: 2      # Before to be able to whip again
+    broadcast: 30   # Prevent spam chat: This will not display again the same message (same player, same duck)
+    alertPlayer: 2  # Prevent spam chat (for the player who has just whip another)
+    alertDuck: 2    # Prevent spam chat (for the player who has just been whipped)
     
   eject:
-    perform: 3 # Not a real cooldown here, but time to wait before being able to eject the rider
-    broadcast: 30
-    alertPlayer: 3
-    alertDuck: 3
+    perform: 3      # /!\ Not a real cooldown here, but time to wait before being able to eject the rider
+    broadcast: 30   # Prevent spam chat: This will not display again the same message (same player, same duck)
+    alertPlayer: 3  # Prevent spam chat (for the rider who has just been ejected)
+    alertDuck: 3    # Prevent spam chat (for the player who has just ejected his rider)
 
 # When an action cannot be done because of the cooldown, the player will receive this message
 # Because the chat can be spammed or not read, this will be done as an action bar message.
