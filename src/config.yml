@@ -65,6 +65,14 @@ duck:
   whip: "{prefix}&e&l{player}&b whipped you, do you like that?"
   eject: "{prefix}&bYou've just ejected &e&l{player}&b, beware... I'm sure he will try again!"
 
+# Bossbar displayed to ridden player
+bossbar_on_ridden_player:
+  enabled: true
+  title: "{player} is ridding you!" # {player} will be replaced by the rider's name
+  color: YELLOW # Available values: BLUE, GREEN, PINK, PURPLE, RED, WHITE, YELLOW
+  style: SOLID  # Available values: SOLID, SEGMENTED_6, SEGMENTED_10, SEGMENTED_12, SEGMENTED_20
+  progress: 1.0 # Between 0 and 1
+
 # Cooldowns (in seconds)
 cooldowns:
   ride:
@@ -116,6 +124,11 @@ allowed_items:
 consume_items:
   ride: false
   whip: true
+
+# Disabled worlds (you can use « [] > to represents an empty list)
+disabled_worlds:
+  - world1_to_disable
+  - World2_to_disable
 
 # Define how many riders can sit on the same player's shoulders
 # You can set groups you need, and give the appropriate permission to your users.

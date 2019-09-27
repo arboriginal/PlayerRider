@@ -3,10 +3,14 @@ package me.arboriginal.PlayerRider;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
-import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
 import org.bukkit.Sound;
+import org.bukkit.boss.BarColor;
+import org.bukkit.boss.BarStyle;
+import org.bukkit.boss.KeyedBossBar;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.ConfigurationSection;
@@ -150,6 +154,7 @@ public class PlayerRider extends JavaPlugin implements Listener {
     }
   }
 
+  @EventHandler
   public void onEntityDismount(EntityDismountEvent event) {
     if (event.isCancelled()) return;
 
@@ -160,6 +165,9 @@ public class PlayerRider extends JavaPlugin implements Listener {
     if (!(duck instanceof Player)) return;
 
     ((Player) player).showPlayer(this, ((Player) duck));
+
+    KeyedBossBar bossbar = Bukkit.getBossBar(bossbarKey(((Player) player)));
+    if (bossbar != null) bossbar.removeAll();
   }
 
   @EventHandler
@@ -205,7 +213,12 @@ public class PlayerRider extends JavaPlugin implements Listener {
     // https://www.spigotmc.org/threads/how-would-i-stop-an-event-from-being-called-twice.135234/#post-1434104
     if (event.getHand() == EquipmentSlot.OFF_HAND || !isPlayer(event.getRightClicked())) return;
 
-    Player player = event.getPlayer(), duck = (Player) event.getRightClicked();
+    Player  player = event.getPlayer();
+    List<?> list   = config.getList("disabled_worlds");
+
+    if (!list.isEmpty() && list.contains(player.getWorld().getName())) return;
+
+    Player duck = (Player) event.getRightClicked();
 
     if (player.getPassengers().contains(duck)) {
       if (player.getLocation().getPitch() < config.getDouble("eject_maxPitch")
@@ -252,9 +265,20 @@ public class PlayerRider extends JavaPlugin implements Listener {
       cooldown.set("ride.perform", player, duck);
       cooldown.set("eject.perform", duck);
 
-      if (duck.getLocation().getPitch() > config.getDouble("hide_rider_maxPitch")
-          && duck.getPassengers().get(0).equals(player))
+      if (canSeeRider(duck) && duck.getPassengers().get(0).equals(player))
         duck.hidePlayer(this, player);
+
+      if (config.getBoolean("bossbar_on_ridden_player.enabled")) {
+        KeyedBossBar bossbar = Bukkit.createBossBar(
+            bossbarKey(duck),
+            config.getString("bossbar_on_ridden_player.title").replace("{player}", player.getName()),
+            BarColor.valueOf(config.getString("bossbar_on_ridden_player.color")),
+            BarStyle.valueOf(config.getString("bossbar_on_ridden_player.style")));
+
+        bossbar.addPlayer(duck);
+        bossbar.setProgress(config.getDouble("bossbar_on_ridden_player.progress"));
+        bossbar.setVisible(true);
+      }
     }
     else {
       userMessage(player, "failed", player, duck);
@@ -273,10 +297,8 @@ public class PlayerRider extends JavaPlugin implements Listener {
 
     Entity duck = player.getPassengers().get(0);
     if (!(duck instanceof Player)) return;
-    
-    Location loc = player.getLocation();
 
-    if (loc.getPitch() > config.getDouble("hide_rider_maxPitch"))
+    if (canSeeRider(player))
       player.hidePlayer(this, ((Player) duck));
     else
       player.showPlayer(this, ((Player) duck));
@@ -303,12 +325,21 @@ public class PlayerRider extends JavaPlugin implements Listener {
     }
   }
 
+  private NamespacedKey bossbarKey(Player player) {
+    return new NamespacedKey(this, getName() + "." + player.getUniqueId());
+  }
+
   private void broadcast(String key, CommandSender player, CommandSender duck) {
     String message = config.getString("broadcast." + key);
 
     if (!message.isEmpty()) {
       getServer().broadcastMessage(prepareMessage(message, player, duck));
     }
+  }
+
+  private boolean canSeeRider(Player player) {
+    double max = config.getDouble("hide_rider_maxPitch");
+    return max != 0 && player.getLocation().getPitch() > max;
   }
 
   private void consume(Player player, ItemStack item, String key) {
