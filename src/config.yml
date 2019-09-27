@@ -1,3 +1,13 @@
+# PlayerRider configuration file.
+# .
+# You can find explanation of all parameters here:
+# https://github.com/arboriginal/PlayerRider/blob/master/src/config.yml
+# .
+# Also, an up-to-date list of permissions can be read here: 
+# https://github.com/arboriginal/PlayerRider/blob/master/src/plugin.yml
+# .
+# Don't forget: Whip your friend is fun in Minecraft... not IRL! :p
+
 ########################################################################################################
 # Language settings
 ########################################################################################################
@@ -23,6 +33,15 @@ sndErr: "{prefix}&cChosen sound is invalid and has been disabled."
 tooMany: "{prefix}&6{duck}&c cannot wear more players... He needs to eat more spinach!"
 # Message when the player should be able to ride but it's fail (maybe another plugin cancel the event)
 failed: "{prefix}&cUnable to ride &6{duck}&c, maybe another plugin is preventing it..."
+# Error message when the plugin can't write to the file storing user preferences (ridability only for now)
+fileErr: "{prefix}&cUnable to write to usersPreferences.yml"
+# Warning message displayed in console if you try to run /prider-toggle from it
+toggleWarn: "{prefix}&6Sorry console, you're not a player... Nobody can ride you!"
+# Error message when the user preferences (ridability only for now) cannot be saved (file not writable)
+toggleErr: "{prefix}&cUnable to toggle your ridability, contact an admin..."
+# Messages sent to the player when using command /prider-toggle
+statusOn: "{prefix}&aOther players can now ride you"
+statusOff: "{prefix}&aOther players cannot ride you anymore"
 
 # In the both 3 sections: (broadcast, player and duck)
 # - sub-section "ride" is used when a player riders another
@@ -139,3 +158,12 @@ boost_whip_volume: 1.0
 # Pitch of the sound (normal play = 1, value can be from 0.4 to 2 if I remember well)
 boost_whip_pitch: 1.3
 # Tips: To find the sound you want, you can use the ingame /playsound command.
+
+##### New in version 1.14 #####
+
+# Max pitch value the riden player must be to be able to view his rider
+# (look with F3 in the game and see what pich value is OK for you).
+# If not used, the player view can be obstructed by rider legs...
+hide_rider_maxPitch: 25 # 0 to disable this feature
+# Please note: This is not perfect, because if the player use third person view, it has no sense...
+# and unfortunately, this cannot be detected in a Spigot plugin (this is client side)

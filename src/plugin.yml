@@ -1,6 +1,6 @@
 name: PlayerRider
 description: Allow you to ride players.
-version: 1.13.2
+version: 1.14
 
 author: arboriginal
 website: https://www.spigotmc.org/resources/playerrider.62799/
@@ -18,6 +18,10 @@ commands:
   prider-reload:
     description: Reload PlayerRider configuration
     permission: playerrider.reload
+    
+  prider-toggle:
+    description: Toggle own ridability
+    permission: playerrider.ducktoggle
 
 permissions:
   playerrider.reload:
@@ -42,6 +46,10 @@ permissions:
 
   playerrider.duck:
     description: Allows to be ridden.
+    default: true
+
+  playerrider.ducktoggle:
+    description: Allows to switch your "ridability".
     default: true
 
   playerrider.eject:

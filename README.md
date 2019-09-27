@@ -9,7 +9,7 @@ Right click on a player to ride him. Press the sneak key to get off.
 **You can ride a player if**:
 
 * You have the permission `playerrider.ride`
-* This player has the permission `playerrider.duck`
+* This player has the permission `playerrider.duck` (and didn't disabled it, see commands)
 * You are not in a vehicle / already on a player`
 * Your hand contains one of the allowed items (configurable)
 
@@ -35,6 +35,7 @@ Simply copy [PlayerRider.jar](https://github.com/arboriginal/PlayerRider/release
 ## Commands
 
 * **prider-reload**: Reload the configuration.
+* **prider-toggle**: Toggle own ridability.
 
 ## Permissions
 
@@ -44,6 +45,7 @@ Simply copy [PlayerRider.jar](https://github.com/arboriginal/PlayerRider/release
 * **playerrider.whip**t: Allows to whip he player you are riding.
 * **playerrider.whip.keepitem**t: Allows to whip he player you are riding without consuming the item (if activated).
 * **playerrider.duck**: Allows to be ridden.
+* **playerrider.ducktoggle**: Allows to use `/prider-toggle` command.
 * **playerrider.eject**: Allows to eject your passenger.
 
 ## Configuration

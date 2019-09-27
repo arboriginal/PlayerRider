@@ -1,13 +1,17 @@
 package me.arboriginal.PlayerRider;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.List;
 import org.bukkit.ChatColor;
+import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Sound;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -18,21 +22,24 @@ import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
+import org.spigotmc.event.entity.EntityDismountEvent;
 import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.chat.TextComponent;
-
-// TODO: Find a way not to hide the duck POV with rider legs (players have new hitbox)
 
 public class PlayerRider extends JavaPlugin implements Listener {
   public static FileConfiguration config;
   public static Sound             sound;
   public static Float             volume;
   public static PRcooldown        cooldown;
+
+  private File              file;
+  private YamlConfiguration users;
 
   // -----------------------------------------------------------------------------------------------
   // JavaPlugin methods
@@ -44,6 +51,14 @@ public class PlayerRider extends JavaPlugin implements Listener {
       reloadConfig();
       userMessage(sender, "reload");
 
+      return true;
+    }
+
+    if (command.getName().equalsIgnoreCase("prider-toggle")) {
+      if (sender instanceof Player)
+        userMessage(sender, rideToggle((Player) sender));
+      else
+        userMessage(sender, "toggleWarn");
       return true;
     }
 
@@ -60,7 +75,9 @@ public class PlayerRider extends JavaPlugin implements Listener {
   @Override
   public void onEnable() {
     cooldown = new PRcooldown();
+
     reloadConfig();
+    dataLoad();
 
     getServer().getPluginManager().registerEvents(this, this);
   }
@@ -90,18 +107,6 @@ public class PlayerRider extends JavaPlugin implements Listener {
   // -----------------------------------------------------------------------------------------------
   // Listener methods
   // -----------------------------------------------------------------------------------------------
-
-  private boolean duckAllowed(Player duck, int passengersCount) {
-    ConfigurationSection section = config.getConfigurationSection("max_riders");
-
-    for (String group : section.getKeys(false)) {
-      if ((group.equals("default") || duck.hasPermission("playerrider.duck." + group))
-          && config.getInt("max_riders." + group) >= passengersCount)
-        return true;
-    }
-
-    return false;
-  }
 
   @EventHandler
   public void onEntityDamage(EntityDamageEvent event) {
@@ -143,6 +148,18 @@ public class PlayerRider extends JavaPlugin implements Listener {
         return;
       }
     }
+  }
+
+  public void onEntityDismount(EntityDismountEvent event) {
+    if (event.isCancelled()) return;
+
+    Entity player = event.getDismounted();
+    if (!(player instanceof Player)) return;
+
+    Entity duck = event.getEntity();
+    if (!(duck instanceof Player)) return;
+
+    ((Player) player).showPlayer(this, ((Player) duck));
   }
 
   @EventHandler
@@ -202,7 +219,7 @@ public class PlayerRider extends JavaPlugin implements Listener {
       return;
     }
 
-    if (!playerAllowed(player, "ride") || !duck.hasPermission("playerrider.duck") || player.isInsideVehicle()) return;
+    if (!playerAllowed(player, "ride") || !rideIsActivated(duck) || player.isInsideVehicle()) return;
 
     ItemStack item = player.getInventory().getItemInMainHand();
 
@@ -234,10 +251,35 @@ public class PlayerRider extends JavaPlugin implements Listener {
       alert("ride", player, duck);
       cooldown.set("ride.perform", player, duck);
       cooldown.set("eject.perform", duck);
+
+      if (duck.getLocation().getPitch() > config.getDouble("hide_rider_maxPitch")
+          && duck.getPassengers().get(0).equals(player))
+        duck.hidePlayer(this, player);
     }
     else {
       userMessage(player, "failed", player, duck);
     }
+  }
+
+  @EventHandler
+  public void onPlayerMove(PlayerMoveEvent event) {
+    if (event.isCancelled()) return;
+
+    double maxPitch = config.getDouble("eject_maxPitch");
+    if (maxPitch == 0) return;
+
+    Player player = event.getPlayer();
+    if (player.getPassengers().isEmpty()) return;
+
+    Entity duck = player.getPassengers().get(0);
+    if (!(duck instanceof Player)) return;
+    
+    Location loc = player.getLocation();
+
+    if (loc.getPitch() > config.getDouble("hide_rider_maxPitch"))
+      player.hidePlayer(this, ((Player) duck));
+    else
+      player.showPlayer(this, ((Player) duck));
   }
 
   // -----------------------------------------------------------------------------------------------
@@ -276,6 +318,41 @@ public class PlayerRider extends JavaPlugin implements Listener {
       item.setAmount(item.getAmount() - 1);
   }
 
+  private void dataLoad() {
+    users = new YamlConfiguration();
+    file  = new File(getDataFolder(), "usersPreferences.yml");
+
+    if (file.exists())
+      users = YamlConfiguration.loadConfiguration(file);
+    else
+      dataSave();
+  }
+
+  private boolean dataSave() {
+    try {
+      if (!file.exists()) file.createNewFile();
+
+      users.save(file);
+      return true;
+    }
+    catch (IOException e) {
+      getLogger().severe(prepareMessage(config.getString("fileErr")));
+      return false;
+    }
+  }
+
+  private boolean duckAllowed(Player duck, int passengersCount) {
+    ConfigurationSection section = config.getConfigurationSection("max_riders");
+
+    for (String group : section.getKeys(false)) {
+      if ((group.equals("default") || duck.hasPermission("playerrider.duck." + group))
+          && config.getInt("max_riders." + group) >= passengersCount)
+        return true;
+    }
+
+    return false;
+  }
+
   private boolean isPlayer(Entity entity) {
     return (entity instanceof Player) && !entity.hasMetadata("NPC");
   }
@@ -295,6 +372,28 @@ public class PlayerRider extends JavaPlugin implements Listener {
     if (duck != null) message = message.replace("{duck}", duck.getName());
 
     return ChatColor.translateAlternateColorCodes('&', message);
+  }
+
+  private String rideKey(Player duck) {
+    return duck.getUniqueId() + ".ridable";
+  }
+
+  private boolean rideIsActivated(Player player) {
+    if (!player.hasPermission("playerrider.duck")) return false;
+
+    String key = rideKey(player);
+
+    return !users.contains(key) || users.getBoolean(key);
+  }
+
+  private String rideToggle(Player player) {
+    String  key    = rideKey(player);
+    boolean status = !users.contains(key) || users.getBoolean(key);
+
+    users.set(key, !status);
+    if (!dataSave()) return "toggleErr";
+
+    return status ? "statusOff" : "statusOn";
   }
 
   private void userMessage(CommandSender sender, String key) {
