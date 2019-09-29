@@ -190,7 +190,7 @@ disabled_worlds:
 # Disclaimer for those potion effects:
 # It can be used by players to cure a higher effect, and I will not make a complex mechanic to prevent it.
 # BUT, if a player has other types of effects before being mounted, those ones will not be affected by PlayerRider.
-# It will only clear types of effect it had when the action begin when it stops.
+# It will only clear, when it stops, types of effect it has added when the action started.
 #
 # For example: (considering the default value of this config file with enabled = true)
 # If a player is affected by a HUNGER effect for 2 minutes and is quickly mounted by another player,
@@ -230,7 +230,6 @@ affect_whipped_player:
       inc: -1
       max: 0 # When you set a negative "inc" value, max value is used as a minimum value
       duration: 60
-
     - type: CONFUSION
       init: 0
       inc: 1
