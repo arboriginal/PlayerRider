@@ -158,7 +158,8 @@ class PRListener implements Listener {
             return;
         }
 
-        if (!PRUtils.playerAllowed(player, "ride") || !PRUtils.rideIsActivated(duck) || player.isInsideVehicle())
+        if (player.isInsideVehicle() || !PRUtils.playerAllowed(player, "ride")
+                || !PRUtils.isRidable(duck) || !PRUtils.rideIsActivated(duck))
             return;
 
         ItemStack item = player.getInventory().getItemInMainHand();

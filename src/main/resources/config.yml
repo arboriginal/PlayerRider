@@ -235,3 +235,7 @@ affect_whipped_player:
       inc: 1
       max: 1
       duration: 60
+
+##### New in version 1.14.3 #####
+min_above_blocks: 1 # (integer) Number of minimum "passable" blocks above a player to let other ride him
+# (passable blocks are blocks the player can pass through, like AIR or grass for example).

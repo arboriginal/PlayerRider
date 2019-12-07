@@ -5,8 +5,11 @@ import java.util.List;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
+import org.bukkit.block.Block;
+import org.bukkit.block.BlockFace;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Entity;
+import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
@@ -96,6 +99,18 @@ class PRUtils {
 
     static boolean isPlayer(Entity entity) {
         return (entity instanceof Player) && !entity.hasMetadata("NPC");
+    }
+
+    static boolean isRidable(Player player) {
+        if (player.isGliding() || player.isSleeping() || player.isSwimming()
+                || (player.isInsideVehicle() && player.getVehicle().getType() != EntityType.PLAYER))
+            return false;
+
+        Block b = player.getLocation().getBlock();
+        for (int i = 1; i < PR.options.min_above_blocks; i++)
+            if (!b.getRelative(BlockFace.UP, i).isPassable()) return false;
+
+        return true;
     }
 
     static boolean playerAllowed(Player player, String key) {

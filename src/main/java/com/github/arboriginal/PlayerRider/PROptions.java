@@ -17,7 +17,7 @@ class PROptions {
             eject_when_hurt, getoff_when_hurt, prevent_hit_rider, prevent_suffocation;
     double   boost_maxPitch, bossbar_pct, eject_maxPitch, hide_rider_maxPitch;
     float    boost_whip_pitch, boost_whip_volume;
-    int      boost_amplifier, boost_duration;
+    int      boost_amplifier, boost_duration, min_above_blocks;
     Sound    boost_whip_sound;
     String   bossbar_title, file_not_writable_err, potion_effect_err;
 
@@ -55,8 +55,9 @@ class PROptions {
         boost_whip_pitch  = (float) PR.config.getDouble("boost_whip_pitch");
         boost_whip_volume = (float) PR.config.getDouble("boost_whip_volume");
         // Integer values
-        boost_amplifier = PR.config.getInt("boost_amplifier");
-        boost_duration  = PR.config.getInt("boost_duration");
+        boost_amplifier  = PR.config.getInt("boost_amplifier");
+        boost_duration   = PR.config.getInt("boost_duration");
+        min_above_blocks = PR.config.getInt("min_above_blocks") + 2;
         // Sound values
         boost_whip_sound = (boost_whip_volume > 0) ? (Sound) getEnumValue(Sound.class, "boost_whip_sound") : null;
         // String values
