@@ -34,10 +34,8 @@ class PRListener implements Listener {
 
     // Listener methods -------------------------------------------------------------------------------------------------
 
-    @EventHandler
+    @EventHandler(ignoreCancelled = true)
     private void onEntityDamage(EntityDamageEvent event) {
-        if (event.isCancelled()) return;
-
         Entity injured = event.getEntity();
         if (!PRUtils.isPlayer(injured)) return;
 
@@ -58,7 +56,7 @@ class PRListener implements Listener {
         }
     }
 
-    @EventHandler
+    @EventHandler(ignoreCancelled = true)
     private void onEntityDamageByEntityEvent(EntityDamageByEntityEvent event) {
         Entity injured = event.getEntity();
 
@@ -74,10 +72,8 @@ class PRListener implements Listener {
         }
     }
 
-    @EventHandler
+    @EventHandler(ignoreCancelled = true)
     private void onEntityDismount(EntityDismountEvent event) {
-        if (event.isCancelled()) return;
-
         Entity duck = event.getDismounted();
         if (!(duck instanceof Player)) return;
 
@@ -135,7 +131,7 @@ class PRListener implements Listener {
         if (PR.options.effects_whipped_enabled) PRUtils.effectsApply(duck, PR.options.effects_whipped);
     }
 
-    @EventHandler
+    @EventHandler(ignoreCancelled = true)
     private void onPlayerInteractEntity(PlayerInteractEntityEvent event) {
         // https://www.spigotmc.org/threads/how-would-i-stop-an-event-from-being-called-twice.135234/#post-1434104
         if (event.getHand() == EquipmentSlot.OFF_HAND || !PRUtils.isPlayer(event.getRightClicked())) return;
@@ -207,10 +203,8 @@ class PRListener implements Listener {
         else PRUtils.userMessage(player, "failed", player, duck);
     }
 
-    @EventHandler
+    @EventHandler(ignoreCancelled = true)
     private void onPlayerMove(PlayerMoveEvent event) {
-        if (event.isCancelled()) return;
-
         Player player = event.getPlayer();
         if (player.getPassengers().isEmpty()) return;
 
