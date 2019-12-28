@@ -1,7 +1,7 @@
 ---
 name: Bug report
 about: Create a report describing a problem
-title: "[version] short description"
+title: "[plugin-version] short description"
 labels: ''
 assignees: ''
 
@@ -10,7 +10,7 @@ assignees: ''
 **Step 1: Read this first**
 If you don't read and apply what is explained here, don't waste your time to post: I'll simply ignore it!
 
-If you're too lazy for it, I will be lazy too. I'm making my plugins on my free time (and it takes time), I'm sharing them with the community and ask no money for this. So, if you don't understanding I'm bored by people who make me loose my time, then don't use my plugins and don't disturb me.
+If you're too lazy for it, I will be lazy too. I'm making my plugins on my free time (and it takes time), I'm sharing them with the community and ask no money for this. So, if you don't understand I'm bored by people who makes me loose my time, then don't use my plugins and don't disturb me.
 
 Also, remember if you don't give enough details, I will not be able to reproduce, and I can't work on a bug I can't see. It's also humanly impossible to try all possible combinations of configurations / installed plugins / versions, so don't count on me to pass hours to check everything for you.
 
@@ -18,7 +18,7 @@ Keep in mind I have several parallel projects (what you see from me on Github an
 
 For all of you who will follow this bug report guideline, I'll do my best to help you as soon as I can. And if you have java knowledge, do not hesitate to send me a pull request on github if you know how to fix something or improve the plugin.
 
-Sorry for this long process but because of users, unable to read 3 lines on the bottom of my plugin descriptions where I explained this shortly, I no more want to loose my time by explaining again and again the same things. Asking again and again the same details, waiting to get a part of them, re-ask, etc to finally after loosing my energy to get enough informations to start debug and release a fixed version, don't receive even a single word to confirm me it's ok now. If you're still reading this I suppose you are smart enough to understand that, and this is exclusively for people like you I'm going to share my plugins.
+Sorry for this long process but because of users, unable to read 3 lines on the bottom of my plugin descriptions where I explained this shortly, I no more want to loose my time by explaining again and again the same things. Asking again and again the same details, waiting to get a part of them, re-ask, etc to finally after loosing my energy to get enough informations to start debug and release a fixed version, don't receive even a single word to confirm me it's ok now. If you're still reading this I suppose you are smart enough to understand that, and this is exclusively for people like you I'm going on to share my plugins.
 
 Do not hesitate to leave a comment, in Github and in Spigot forum, when a user post an incomplete bug report to ask him to report correctly, or to shut up. I let you choose your words (within the limits of Github / Spigot rules). This small action will help me not being depressive and not give up the sharing of my plugins.
 
@@ -33,10 +33,10 @@ Because the problem can be with your configuration or another plugin:
 5. Try without your other plugins
 6. Re-add your plugins one by one and re-test each time to determine if there is an incompatibility
 7. If you didn't solved the problem, fill this report, and delete all lines above "Describe the bug".
-8. Choose a comprehensive title which shortly describe the problem
-9. Use [version] as prefix (replace "version" by your exact version number) for example: « [1.0] »
+8. Choose a comprehensive title which shortly describes the problem, prefixed by the exact version of the plugin, for example: « [1.0] ».
+9. Remove text after "Additional context" question
 
-You are allowed to skip some questions IF AND ONLY IF it's not applicable / relevant. BTW... English is not my mother language, so do not use sentences too complex for a non-native english.
+You are allowed to skip some questions IF AND ONLY IF it's not applicable / relevant (and in this case, remove them, no need to let the default text!). BTW... English is not my mother language, so do not use sentences too complex for a non-native english.
 
 **Describe the bug**
 A clear and concise description of what the bug is.
